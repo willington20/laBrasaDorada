@@ -1,0 +1,11 @@
+# Variables de entorno (nunca subas esto a GitHub)
+.env
+
+# Datos de Docker
+db_data/
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
