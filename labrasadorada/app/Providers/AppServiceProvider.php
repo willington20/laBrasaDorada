@@ -1,24 +1,17 @@
 <?php
-
 namespace App\Providers;
-
+use App\Interfaces\ReservaRepositoryInterface;
+use App\Repositories\ReservaRepository;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
-{
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
+class AppServiceProvider extends ServiceProvider {
+
+    public function register(): void {
+        $this->app->bind(
+            ReservaRepositoryInterface::class,
+            ReservaRepository::class
+        );
     }
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
-    }
+    public function boot(): void {}
 }
