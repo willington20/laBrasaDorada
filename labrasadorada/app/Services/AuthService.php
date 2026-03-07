@@ -26,7 +26,7 @@ class AuthService {
 
     // LOGIN
     public function login(array $credenciales): array {
-        if (!$token = JWTAuth::attempt($credenciales)) {
+        if (!$token = auth('api')->attempt($credenciales)) {
             return [
                 'success' => false,
                 'mensaje' => 'Email o contraseña incorrectos'
@@ -37,7 +37,7 @@ class AuthService {
             'success' => true,
             'mensaje' => '¡Bienvenido!',
             'token'   => $token,
-            'user'    => auth()->user()
+            'user'    => auth('api')->user()
         ];
     }
 

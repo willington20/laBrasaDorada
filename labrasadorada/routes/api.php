@@ -2,6 +2,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 // ── Rutas públicas (sin token) ──
@@ -21,4 +22,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/pedidos',             [PedidoController::class, 'index']);
     Route::post('/pedidos',            [PedidoController::class, 'store']);
     Route::post('/pedidos/{id}/pagar', [PedidoController::class, 'pagar']);
+});
+
+// ── Rutas de Admin (JWT + rol admin) ──
+Route::middleware(['auth:api', 'es.admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard',        [AdminController::class, 'dashboard']);
+    Route::get('/reservas',         [AdminController::class, 'reservas']);
+    Route::put('/reservas/{id}',    [AdminController::class, 'actualizarReserva']);
+    Route::delete('/reservas/{id}', [AdminController::class, 'eliminarReserva']);
+    Route::get('/pedidos',          [AdminController::class, 'pedidos']);
 });
