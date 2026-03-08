@@ -28,13 +28,18 @@ Página web completa de restaurante con panel de administración CRUD.
 
 **1. Clona el repositorio**
 ```bash
-git clone https://github.com/TU_USUARIO/restaurante.git
-cd restaurante
+git clone https://github.com/willington20/laBrasaDorada/
 ```
 
-**2. Levanta los contenedores**
+
+
+**2. Levanta los contenedores muy IMPORTANTE **
 ```bash
-docker-compose up -d
+ingresa al contenedor con el siguiente comando:
+
+cd /workspaces/laBrasaDorada/labrasadorada
+docker compose up -d --build
+
 ```
 
 **3. Abre en el navegador**
