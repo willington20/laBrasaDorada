@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — La Brasa Dorada</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --gold: #c9a84c; --gold-light: #e8c97a;
+      --dark: #0e0b07; --dark2: #1a1409; --dark3: #241c0e;
+      --cream: #f5edd8; --text: #d4c4a0;
+      --green: #27ae60; --red: #e74c3c; --orange: #f39c12;
+      --sidebar: 260px;
+    }
+    body { font-family: 'Jost', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #0e0b07 0%, #241c0e 50%, #0e0b07 100%);
+    }
+    .login-box {
+      background: var(--dark2); border: 1px solid rgba(201,168,76,0.2);
+      padding: 3rem; width: 100%; max-width: 400px;
+    }
+    .login-box h2 { font-family: 'Playfair Display', serif; color: var(--cream); margin-bottom: .5rem; font-size: 1.8rem; }
+    .login-box p { color: var(--text); font-size: .85rem; margin-bottom: 2rem; font-weight: 300; }
+    .login-box label { display: block; font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: .5rem; }
+    .login-box input { width: 100%; padding: .85rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(201,168,76,0.2); color: var(--cream); font-family: 'Jost',sans-serif; font-size: .9rem; outline: none; margin-bottom: 1rem; transition: border .3s; }
+    .login-box input:focus { border-color: var(--gold); }
+    .btn-login { width: 100%; padding: 1rem; background: var(--gold); border: none; color: var(--dark); font-family: 'Jost',sans-serif; font-size: .85rem; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; font-weight: 500; transition: all .3s; margin-top: .5rem; }
+    .btn-login:hover { background: var(--gold-light); }
+    .login-error { color: var(--red); font-size: .8rem; margin-top: 1rem; text-align: center; display: none; }
+    .login-error.show { display: block; }
+
+    /* ── PANEL LAYOUT ── */
+    #admin-panel { display: none; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: var(--sidebar); height: 100vh;
+      background: var(--dark2); border-right: 1px solid rgba(201,168,76,0.1);
+      display: flex; flex-direction: column; z-index: 100;
+    }
+    .sidebar-logo { padding: 2rem 1.5rem; border-bottom: 1px solid rgba(201,168,76,0.1); }
+    .sidebar-logo .name { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.1rem; }
+    .sidebar-logo .sub { font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text); margin-top: .2rem; opacity: .6; }
+    .sidebar-nav { flex: 1; padding: 1.5rem 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 1rem; padding: .85rem 1.5rem;
+      cursor: pointer; transition: all .2s; border-left: 3px solid transparent;
+      font-size: .85rem; letter-spacing: 1px; color: var(--text);
+    }
+    .nav-item:hover { background: rgba(201,168,76,0.06); color: var(--cream); }
+    .nav-item.active { border-left-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--gold); }
+    .nav-item .icon { font-size: 1.1rem; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(201,168,76,0.1); }
+    .admin-info { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+    .admin-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3); display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+    .admin-name { font-size: .85rem; color: var(--cream); }
+    .admin-role { font-size: .7rem; color: var(--gold); }
+    .btn-logout { width: 100%; padding: .6rem; border: 1px solid rgba(231,76,60,0.3); background: transparent; color: var(--red); font-family: 'Jost',sans-serif; font-size: .75rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+    .btn-logout:hover { background: var(--red); color: #fff; }
+
+    /* MAIN CONTENT */
+    .main { margin-left: var(--sidebar); padding: 2.5rem; min-height: 100vh; }
+    .page-header { margin-bottom: 2.5rem; }
+    .page-header h1 { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 2rem; }
+    .page-header h1 em { color: var(--gold); font-style: italic; }
+    .page-header p { color: var(--text); font-size: .85rem; margin-top: .4rem; font-weight: 300; }
+
+    /* TABS */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* STAT CARDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 1.2rem; margin-bottom: 2.5rem; }
+    .stat-card { background: var(--dark2); border: 1px solid rgba(201,168,76,0.1); padding: 1.5rem; transition: all .3s; }
+    .stat-card:hover { border-color: rgba(201,168,76,0.3); transform: translateY(-2px); }
+    .stat-card .label { font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text); margin-bottom: .8rem; }
+    .stat-card .value { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); line-height: 1; }
+    .stat-card .sub { font-size: .75rem; color: var(--text); margin-top: .4rem; }
+    .stat-card.green .value { color: var(--green); }
+    .stat-card.orange .value { color: var(--orange); }
+    .stat-card.red .value { color: var(--red); }
+
+    /* TABLES */
+    .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+    .table-header h3 { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 1.3rem; }
+    .table-wrap { background: var(--dark2); border: 1px solid rgba(201,168,76,0.1); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(201,168,76,0.06); border-bottom: 1px solid rgba(201,168,76,0.15); }
+    th { padding: 1rem 1.2rem; text-align: left; font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 500; }
+    td { padding: .9rem 1.2rem; font-size: .85rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(201,168,76,0.03); }
+
+    /* BADGES */
+    .badge { display: inline-block; padding: .25rem .8rem; border-radius: 20px; font-size: .7rem; font-weight: 500; text-transform: uppercase; }
+    .badge-pendiente { background: rgba(243,156,18,0.15); color: var(--orange); }
+    .badge-confirmada, .badge-pagado { background: rgba(39,174,96,0.15); color: var(--green); }
+    .badge-cancelada, .badge-cancelado { background: rgba(231,76,60,0.15); color: var(--red); }
+
+    /* ACTION BUTTONS */
+    .acciones { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .btn-accion { padding: .35rem .8rem; border: none; font-family: 'Jost',sans-serif; font-size: .72rem; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; font-weight: 500; }
+    .btn-confirmar { background: rgba(39,174,96,0.15); color: var(--green); border: 1px solid rgba(39,174,96,0.3); }
+    .btn-confirmar:hover { background: var(--green); color: #fff; }
+    .btn-cancelar { background: rgba(243,156,18,0.12); color: var(--orange); border: 1px solid rgba(243,156,18,0.3); }
+    .btn-cancelar:hover { background: var(--orange); color: #fff; }
+    .btn-eliminar { background: rgba(231,76,60,0.12); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+    .btn-eliminar:hover { background: var(--red); color: #fff; }
+
+    /* REFRESH */
+    .btn-refresh { padding: .5rem 1.2rem; background: transparent; border: 1px solid rgba(201,168,76,0.3); color: var(--gold); font-family: 'Jost',sans-serif; font-size: .75rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+    .btn-refresh:hover { background: var(--gold); color: var(--dark); }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--green); color: #fff; padding: 1rem 1.5rem; border-radius: 4px; font-size: .85rem; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all .4s; max-width: 300px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { background: var(--red); }
+
+    /* LOADING */
+    .loading { text-align: center; padding: 3rem; color: var(--text); font-size: .9rem; }
+
+    /* ITEMS PEDIDO */
+    .pedido-items { font-size: .8rem; line-height: 1.6; }
+    .pedido-item { display: flex; gap: .4rem; }
+    .pedido-item span { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>Panel <em style="color:var(--gold);font-style:italic">Admin</em></h2>
+    <p>La Brasa Dorada — Solo administradores</p>
+    <label>Email</label>
+    <input type="email" id="admin-email" placeholder="admin@brasadorada.com"/>
+    <label>Contraseña</label>
+    <input type="password" id="admin-password" placeholder="••••••" onkeydown="if(event.key==='Enter')hacerLoginAdmin()"/>
+    <button class="btn-login" onclick="hacerLoginAdmin()">Entrar al Panel</button>
+    <div class="login-error" id="admin-error"></div>
+  </div>
+</div>
+
+<!-- ── PANEL ── -->
+<div id="admin-panel">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="name">La Brasa Dorada</div>
+      <div class="sub">Panel de Administración</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="irA('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="irA('reservas')">
+        <span class="icon">📅</span> Reservas
+      </div>
+      <div class="nav-item" onclick="irA('pedidos')">
+        <span class="icon">🛒</span> Pedidos
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar">👤</div>
+        <div>
+          <div class="admin-name" id="admin-nombre">Admin</div>
+          <div class="admin-role">Administrador</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="cerrarSesionAdmin()">Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section class="section active" id="sec-dashboard">
+      <div class="page-header">
+        <h1>Buen día, <em id="saludo-nombre">Admin</em></h1>
+        <p>Resumen general de La Brasa Dorada</p>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading">Cargando estadísticas...</div>
+      </div>
+    </section>
+
+    <!-- RESERVAS -->
+    <section class="section" id="sec-reservas">
+      <div class="page-header">
+        <h1>Gestión de <em>Reservas</em></h1>
+        <p>Administra todas las reservas del restaurante</p>
+      </div>
+      <div class="table-header">
+        <h3>Todas las Reservas</h3>
+        <button class="btn-refresh" onclick="cargarReservas()">↻ Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Personas</th>
+              <th>Teléfono</th>
+              <th>Notas</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-reservas">
+            <tr><td colspan="9" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section class="section" id="sec-pedidos">
+      <div class="page-header">
+        <h1>Gestión de <em>Pedidos</em></h1>
+        <p>Todos los pedidos realizados en el restaurante</p>
+      </div>
+      <div class="table-header">
+        <h3>Todos los Pedidos</h3>
+        <button class="btn-refresh" onclick="cargarPedidos()">↻ Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-pedidos">
+            <tr><td colspan="6" class="loading">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  var API     = window.location.origin;
+  var token   = localStorage.getItem('token') || null;
+  var usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+  // ── Al cargar ──
+  document.addEventListener('DOMContentLoaded', function() {
+    if (token && usuario && usuario.rol === 'admin') {
+      mostrarPanel();
+    }
+  });
+
+  // ── Toast ──
+  function mostrarToast(msg, tipo) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (tipo === 'error' ? ' error' : '') + ' show';
+    setTimeout(function() { t.classList.remove('show'); }, 3500);
+  }
+
+  // ── LOGIN ADMIN ──
+  function hacerLoginAdmin() {
+    var email    = document.getElementById('admin-email').value;
+    var password = document.getElementById('admin-password').value;
+    var errEl    = document.getElementById('admin-error');
+    errEl.classList.remove('show');
+
+    if (!email || !password) {
+      errEl.textContent = 'Completa todos los campos';
+      errEl.classList.add('show');
+      return;
+    }
+
+    fetch(API + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: email, password: password })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        if (data.user.rol !== 'admin') {
+          errEl.textContent = '⛔ Acceso denegado. Solo administradores.';
+          errEl.classList.add('show');
+          return;
+        }
+        token   = data.token;
+        usuario = data.user;
+        localStorage.setItem('token', token);
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+        mostrarPanel();
+      } else {
+        errEl.textContent = data.mensaje || 'Credenciales incorrectas';
+        errEl.classList.add('show');
+      }
+    })
+    .catch(function() {
+      errEl.textContent = 'Error de conexión con el servidor';
+      errEl.classList.add('show');
+    });
+  }
+
+  function mostrarPanel() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display  = 'block';
+    document.getElementById('admin-nombre').textContent   = usuario.name;
+    document.getElementById('saludo-nombre').textContent  = usuario.name;
+    cargarDashboard();
+    cargarReservas();
+    cargarPedidos();
+  }
+
+  // ── NAVEGACIÓN ──
+  function irA(seccion) {
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+    document.getElementById('sec-' + seccion).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  // ── CERRAR SESIÓN ──
+  function cerrarSesionAdmin() {
+    fetch(API + '/api/auth/logout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+    }).finally(function() {
+      token   = null;
+      usuario = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      document.getElementById('admin-panel').style.display  = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+    });
+  }
+
+  // ── DASHBOARD ──
+  function cargarDashboard() {
+    fetch(API + '/api/admin/dashboard', {
+      headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var d = data.data || {};
+      document.getElementById('stats-grid').innerHTML =
+        tarjetaStat('📅', 'Reservas Hoy',     d.reservas_hoy     || 0, '', '') +
+        tarjetaStat('📋', 'Reservas Total',   d.reservas_total   || 0, '', '') +
+        tarjetaStat('⏳', 'Pedidos Pendientes', d.pedidos_pendientes || 0, '', 'orange') +
+        tarjetaStat('💰', 'Ingresos Hoy',     formatCOP(d.ingresos_hoy   || 0), '', 'green') +
+        tarjetaStat('💵', 'Ingresos Total',   formatCOP(d.ingresos_total || 0), '', 'green') +
+        tarjetaStat('👥', 'Usuarios',         d.total_usuarios   || 0, '', '');
+    })
+    .catch(function() {
+      document.getElementById('stats-grid').innerHTML = '<p style="color:var(--red)">Error al cargar estadísticas</p>';
+    });
+  }
+
+  function tarjetaStat(icono, label, value, sub, clase) {
+    return '<div class="stat-card ' + clase + '">' +
+      '<div class="label">' + icono + ' ' + label + '</div>' +
+      '<div class="value">' + value + '</div>' +
+      (sub ? '<div class="sub">' + sub + '</div>' : '') +
+    '</div>';
+  }
+
+  function formatCOP(n) {
+    return '$' + Number(n).toLocaleString('es-CO');
+  }
+
+  // ── RESERVAS ──
+  function cargarReservas() {
+    fetch(API + '/api/admin/reservas', {
+      headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var reservas = data.data || data || [];
+      var tbody    = document.getElementById('tabla-reservas');
+      if (reservas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="loading">No hay reservas aún</td></tr>';
+        return;
+      }
+      tbody.innerHTML = reservas.map(function(r) {
+        return '<tr>' +
+          '<td style="color:var(--gold)">#' + r.id + '</td>' +
+          '<td style="color:var(--cream)">' + r.nombre + '</td>' +
+          '<td>' + r.fecha + '</td>' +
+          '<td>' + r.hora + '</td>' +
+          '<td>' + r.personas + '</td>' +
+          '<td>' + r.telefono + '</td>' +
+          '<td style="max-width:140px;font-size:.8rem">' + (r.notas || '—') + '</td>' +
+          '<td><span class="badge badge-' + r.estado + '">' + r.estado + '</span></td>' +
+          '<td><div class="acciones">' +
+            '<button class="btn-accion btn-confirmar" onclick="actualizarReserva(' + r.id + ',\'confirmada\')">✓</button>' +
+            '<button class="btn-accion btn-cancelar"  onclick="actualizarReserva(' + r.id + ',\'cancelada\')">✕</button>' +
+            '<button class="btn-accion btn-eliminar"  onclick="eliminarReserva(' + r.id + ')">🗑</button>' +
+          '</div></td>' +
+        '</tr>';
+      }).join('');
+    })
+    .catch(function() {
+      document.getElementById('tabla-reservas').innerHTML = '<tr><td colspan="9" style="color:var(--red);padding:1rem">Error al cargar reservas</td></tr>';
+    });
+  }
+
+  function actualizarReserva(id, estado) {
+    fetch(API + '/api/admin/reservas/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ estado: estado })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        mostrarToast(estado === 'confirmada' ? '✅ Reserva confirmada' : '❌ Reserva cancelada', 'success');
+        cargarReservas();
+        cargarDashboard();
+      }
+    })
+    .catch(function() { mostrarToast('Error al actualizar', 'error'); });
+  }
+
+  function eliminarReserva(id) {
+    if (!confirm('¿Eliminar esta reserva? Esta acción no se puede deshacer.')) return;
+    fetch(API + '/api/admin/reservas/' + id, {
+      method: 'DELETE',
+      headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        mostrarToast('🗑 Reserva eliminada', 'success');
+        cargarReservas();
+        cargarDashboard();
+      }
+    })
+    .catch(function() { mostrarToast('Error al eliminar', 'error'); });
+  }
+
+  // ── PEDIDOS ──
+  function cargarPedidos() {
+    fetch(API + '/api/admin/pedidos', {
+      headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var pedidos = data.data || data || [];
+      var tbody   = document.getElementById('tabla-pedidos');
+      if (pedidos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">No hay pedidos aún</td></tr>';
+        return;
+      }
+      tbody.innerHTML = pedidos.map(function(p) {
+        var items = Array.isArray(p.items) ? p.items : [];
+        var itemsHtml = '<div class="pedido-items">' +
+          items.map(function(it) {
+            return '<div class="pedido-item"><span>' + it.cantidad + 'x</span> ' + it.nombre + ' — ' + formatCOP(it.precio) + '</div>';
+          }).join('') +
+        '</div>';
+        var cliente = p.user ? p.user.name : 'Cliente #' + p.user_id;
+        var fecha   = p.created_at ? p.created_at.substring(0,10) : '—';
+        return '<tr>' +
+          '<td style="color:var(--gold)">#' + p.id + '</td>' +
+          '<td style="color:var(--cream)">' + cliente + '</td>' +
+          '<td>' + itemsHtml + '</td>' +
+          '<td style="color:var(--gold);font-family:\'Playfair Display\',serif">' + formatCOP(p.total) + '</td>' +
+          '<td><span class="badge badge-' + p.estado + '">' + p.estado + '</span></td>' +
+          '<td>' + fecha + '</td>' +
+        '</tr>';
+      }).join('');
+    })
+    .catch(function() {
+      document.getElementById('tabla-pedidos').innerHTML = '<tr><td colspan="6" style="color:var(--red);padding:1rem">Error al cargar pedidos</td></tr>';
+    });
+  }
+</script>
+</body>
+</html>
