@@ -1,6 +1,12 @@
 # 🍽️ La Brasa Dorada — Restaurante
 
+
+<img width="1674" height="812" alt="image" src="https://github.com/user-attachments/assets/c3e5fa1a-3267-4c0a-9e92-81d2aac4713c" />
+
+
 Página web completa de restaurante con panel de administración CRUD.
+
+<img width="1725" height="719" alt="image" src="https://github.com/user-attachments/assets/6193a2f6-40ec-44b8-9f47-b955041ac228" />
 
 ## 🛠️ Tecnologías
 - HTML + CSS + JavaScript (Frontend)
@@ -12,6 +18,11 @@ Página web completa de restaurante con panel de administración CRUD.
 
 ### Requisitos
 - Instalar [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+
+
+<img width="944" height="323" alt="image" src="https://github.com/user-attachments/assets/1db0e04a-fad7-4846-a4db-b861914f7330" />
+
 
 ### Pasos
 
